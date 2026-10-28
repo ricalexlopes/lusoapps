@@ -88,6 +88,25 @@ details{grid-column:1/-1} details summary{cursor:pointer;color:var(--pool);font-
 .sheet ol{padding-left:22px;margin:8px 0} .sheet li{margin:6px 0}
 .toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:14px;padding:14px 16px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:40}
 .err{color:var(--bad);font-size:14px}
+nav.tabs{position:sticky;top:0;z-index:6;background:var(--bg);display:flex;gap:6px;padding:10px 0 2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:1 0 auto;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14.5px;min-height:42px;cursor:pointer}
+nav.tabs button[aria-selected=true]{background:var(--pool);border-color:var(--pool);color:var(--on)}
+section{display:grid;gap:14px}
+.tbl{overflow-x:auto;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14.5px}
+th,td{padding:8px 5px;vertical-align:top;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+tr:last-child td{border-bottom:0}
+.near{color:var(--warn);font-weight:700}
+.pb{background:var(--ok);color:#fff;border-radius:6px;padding:1px 6px;font-size:11.5px;font-weight:800;margin-left:6px;vertical-align:2px}
+.mh{font-size:15px;margin:14px 0 2px} .mh:first-child{margin-top:4px}
+.cal{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:start}
+.cal .d{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:64px}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--card);color:var(--muted);padding:8px 12px;font-weight:700;font-size:14px;min-height:40px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--pool);color:var(--on)}
 .foot{font-size:12.5px;color:var(--muted);text-align:center;padding:4px 8px}
 .foot a{color:inherit}
 </style>
@@ -100,7 +119,15 @@ details{grid-column:1/-1} details summary{cursor:pointer;color:var(--pool);font-
   </div>
 </header>
 
-<div class="wrap"><main id="main">
+<div class="wrap">
+<nav class="tabs" role="tablist" id="tabs">
+  <button role="tab" data-tab="live" aria-selected="true" data-t="tLive"></button>
+  <button role="tab" data-tab="res" aria-selected="false" data-t="tRes"></button>
+  <button role="tab" data-tab="min" aria-selected="false" data-t="tMin"></button>
+  <button role="tab" data-tab="cal" aria-selected="false" data-t="tCal"></button>
+</nav>
+<main id="main">
+<section id="tab-live">
 
   <!-- the meet -->
   <div class="card" id="meetCard">
@@ -140,8 +167,16 @@ details{grid-column:1/-1} details summary{cursor:pointer;color:var(--pool);font-
   </div>
 
   <div id="swimmers" style="display:grid;gap:14px"></div>
+</section>
+<section id="tab-res" hidden><div id="resBox" style="display:grid;gap:14px"></div></section>
+<section id="tab-min" hidden><div id="minBox" style="display:grid;gap:14px"></div></section>
+<section id="tab-cal" hidden>
+  <div class="card"><div class="sw-h"><h2 data-t="calTitle"></h2><div class="seg" id="natSeg"><button data-nat="POR">PT</button><button data-nat="ESP">ES</button></div></div>
+  <p class="small muted" data-t="calNote" style="margin:6px 0 10px"></p><div class="cal" id="calList"></div></div>
+  <div class="card" id="champCard" hidden><h2 data-t="champTitle"></h2><p class="small muted" id="champNote" style="margin:6px 0 10px"></p><div class="cal" id="champList"></div></div>
+</section>
 
-  <p class="foot"><span data-t="data"></span> <a href="https://live.swimrankings.net/" target="_blank" rel="noopener">live.swimrankings.net</a> · <span data-t="notAff"></span><br><span data-t="privacy"></span> <a href="/privacy/" data-t="privLink"></a> · Heatline by <a href="/">LusoApps</a> · v0.9</p>
+  <p class="foot"><span data-t="data"></span> <a href="https://live.swimrankings.net/" target="_blank" rel="noopener">live.swimrankings.net</a> · <span data-t="notAff"></span><br><span data-t="privacy"></span> <a href="/privacy/" data-t="privLink"></a> · Heatline by <a href="/">LusoApps</a> · v0.10</p>
 </main></div>
 
 <nav class="dock"><div class="wrap">
@@ -227,6 +262,19 @@ var LANGS=["pt","en","es"];
 var lang=LS.get("lang",null)||(function(){var l=(navigator.language||"en").slice(0,2).toLowerCase();return LANGS.indexOf(l)>=0?l:"en"})();
 function t(k){return (T[lang]&&T[lang][k]!=null)?T[lang][k]:T.en[k]}
 var LOC={pt:"pt-PT",en:"en-GB",es:"es-ES"};
+Object.assign(T.pt,{inDays:"daqui a {n} dias",champTitle:"Campeonatos e prazos",champFor:"Só para a categoria dos teus nadadores:",tLive:"Ao vivo",tRes:"Resultados",tMin:"Mínimos",tCal:"Calendário",calTitle:"Próximas provas",calNote:"Competições com resultados ao vivo. Toca em «Seguir» para a acompanhar no separador Ao vivo.",follow:"Seguir",following:"A seguir",calNone:"Sem provas anunciadas.",
+ best:"Melhores tempos",season:"Provas da época",resLoading:"A carregar os resultados da época…",resNone:"Ainda sem resultados esta época.",rpNote:"RP = recorde pessoal (melhor tempo nessa prova e piscina).",
+ minCat:"Categoria",minSoon:"Os mínimos desta categoria ainda não estão na app.",minNoCat:"Não foi possível saber a categoria deste nadador.",zon:"Zonais",nac:"Nacionais",minMiss:"falta",minDone:"✓ feito",minNear:"Amarelo: a menos de 1 segundo do mínimo.",minWin:"Contam os tempos de",to:"a",
+ pickFirst:"Escolhe primeiro um nadador no separador Ao vivo.",pool:"Piscina",bestT:"Melhor",rpNew:"Recorde pessoal!"});
+Object.assign(T.en,{inDays:"in {n} days",champTitle:"Championships and deadlines",champFor:"Only for your swimmers' age groups:",tLive:"Live",tRes:"Results",tMin:"Standards",tCal:"Calendar",calTitle:"Upcoming meets",calNote:"Meets with live results. Tap “Follow” to watch it in the Live tab.",follow:"Follow",following:"Following",calNone:"No meets announced.",
+ best:"Best times",season:"This season's meets",resLoading:"Loading this season's results…",resNone:"No results this season yet.",rpNote:"PB = personal best (best time in that event and pool).",
+ minCat:"Age group",minSoon:"The standards for this age group are not in the app yet.",minNoCat:"Couldn't work out this swimmer's age group.",zon:"Regional",nac:"National",minMiss:"to go",minDone:"✓ made",minNear:"Amber: less than 1 second away.",minWin:"Times count from",to:"to",
+ pickFirst:"First choose a swimmer in the Live tab.",pool:"Pool",bestT:"Best",rpNew:"Personal best!"});
+Object.assign(T.es,{inDays:"dentro de {n} días",champTitle:"Campeonatos y plazos",champFor:"Solo para la categoría de tus nadadores:",tLive:"En directo",tRes:"Resultados",tMin:"Mínimas",tCal:"Calendario",calTitle:"Próximas competiciones",calNote:"Competiciones con resultados en directo. Toca «Seguir» para verla en En directo.",follow:"Seguir",following:"Siguiendo",calNone:"Sin competiciones anunciadas.",
+ best:"Mejores marcas",season:"Competiciones de la temporada",resLoading:"Cargando los resultados de la temporada…",resNone:"Aún sin resultados esta temporada.",rpNote:"MM = mejor marca personal (en esa prueba y piscina).",
+ minCat:"Categoría",minSoon:"Las mínimas de esta categoría aún no están en la app.",minNoCat:"No se pudo saber la categoría de este nadador.",zon:"Zonales",nac:"Nacionales",minMiss:"faltan",minDone:"✓ hecha",minNear:"Amarillo: a menos de 1 segundo.",minWin:"Cuentan los tiempos del",to:"al",
+ pickFirst:"Elige primero un nadador en En directo.",pool:"Piscina",bestT:"Mejor",rpNew:"¡Mejor marca personal!"});
+T.pt.pbTag="RP";T.en.pbTag="PB";T.es.pbTag="MM";
 
 // Featured meets (entry lists loaded on the server).
 var FEATURED=[{id:"10989",name:"Torneio dos 50 e 100",city:"Pombal",date:"2026-10-31"}];
@@ -251,6 +299,7 @@ function applyLang(){
   document.querySelectorAll("[data-t]").forEach(function(el){el.textContent=t(el.dataset.t)});
   $("q").placeholder=t("qPh"); $("langBtn").textContent=lang.toUpperCase();
   updNotif(); render();
+  if(typeof renderRes==="function"&&NAT!==undefined){renderRes();renderMin();renderCal();renderMeetList()}
 }
 $("langBtn").addEventListener("click",function(){lang=LANGS[(LANGS.indexOf(lang)+1)%LANGS.length];LS.set("lang",lang);applyLang()});
 
@@ -260,9 +309,14 @@ function showAdd(on,meetStep){
   if(on){ renderMeetList(); $("q").value=""; $("qList").innerHTML=""; $("qHint").textContent=t("qShort"); if(!meetStep) setTimeout(function(){$("q").focus()},50); }
 }
 function renderMeetList(){
-  $("meetList").innerHTML=meets.map(function(m){var on=m.id===meetId;return "<button type='button' class='pick"+(on?" on":"")+"' data-meet='"+esc(m.id)+"'><span><b>"+esc(m.name||(t("event")+" "+m.id))+"</b><span class='small muted'>"+esc([m.city,dLong(m.date)].filter(Boolean).join(" · "))+"</span></span><span class='plus'>"+(on?"✓":"›")+"</span></button>"}).join("");
+  var L=meets.slice(), td=today(), a=new Date(Date.now()-3*864e5).toISOString().slice(0,10), z=new Date(Date.now()+14*864e5).toISOString().slice(0,10);
+  if(NAT) NAT.meets.forEach(function(m){ if(m.to>=a && m.from<=z && !L.some(function(x){return x.id===m.id})) L.push({id:m.id,name:m.name,city:m.city,date:m.from}); });
+  L=L.filter(function(m){return m.id===meetId||!m.date||m.date>=a}).sort(function(x,y){return (x.date||"").localeCompare(y.date||"")});
+  $("meetList").innerHTML=L.map(function(m){var on=m.id===meetId;return "<button type='button' class='pick"+(on?" on":"")+"' data-meet='"+esc(m.id)+"'><span><b>"+esc(m.name||(t("event")+" "+m.id))+"</b><span class='small muted'>"+esc([m.city,dLong(m.date)].filter(Boolean).join(" · "))+"</span></span><span class='plus'>"+(on?"✓":"›")+"</span></button>"}).join("");
 }
-$("meetList").addEventListener("click",function(e){var b=e.target.closest("[data-meet]");if(!b)return;setMeet(b.dataset.meet);renderMeetList();$("q").focus()});
+$("meetList").addEventListener("click",function(e){var b=e.target.closest("[data-meet]");if(!b)return;var id=b.dataset.meet;
+  if(!meets.some(function(x){return x.id===id})){var m=natMeet(id);if(m){meets.push({id:m.id,name:m.name,city:m.city,date:m.from});LS.set("meets",meets)}}
+  setMeet(id);renderMeetList();$("q").focus()});
 $("linkForm").addEventListener("submit",function(e){
   e.preventDefault(); var m=String($("linkIn").value).match(/live\.swimrankings\.net\/(?:meets\/(\d+)\/(\d+)|(\d+))/);
   var id=m?(m[3]||(m[1]+m[2])):null;
@@ -285,7 +339,7 @@ $("q").addEventListener("input",function(){
       var L=j.swimmers||[];
       $("qHint").textContent=L.length?"":(DATA&&!DATA.available&&!FEATURED.some(function(f){return f.id===meetId})?t("qNoList"):t("qNone"));
       $("qList").innerHTML=L.map(function(s){var on=swimmers.some(function(x){return x.lic===s.lic});
-        return "<button type='button' class='pick"+(on?" on":"")+"' data-lic='"+esc(s.lic)+"' data-name='"+esc(s.name)+"' data-year='"+esc(s.year||"")+"' data-club='"+esc(s.club)+"'><span><b>"+esc(s.name)+"</b><span class='small muted'>"+esc([s.year?t("born")+" "+s.year:"",s.club].filter(Boolean).join(" · "))+"</span></span><span class='plus'>"+(on?"✓":"+")+"</span></button>"}).join("");
+        return "<button type='button' class='pick"+(on?" on":"")+"' data-lic='"+esc(s.lic)+"' data-name='"+esc(s.name)+"' data-year='"+esc(s.year||"")+"' data-club='"+esc(s.club)+"' data-g='"+esc(s.g||"")+"' data-grp='"+esc(s.grp||"")+"'><span><b>"+esc(s.name)+"</b><span class='small muted'>"+esc([s.year?t("born")+" "+s.year:"",s.club].filter(Boolean).join(" · "))+"</span></span><span class='plus'>"+(on?"✓":"+")+"</span></button>"}).join("");
     }).catch(function(){ if(my===qSeq) $("qHint").textContent=t("noConn"); });
   },300);
 });
@@ -293,11 +347,11 @@ $("qList").addEventListener("click",function(e){
   var b=e.target.closest("[data-lic]"); if(!b) return;
   var lic=b.dataset.lic;
   if(swimmers.some(function(x){return x.lic===lic})) swimmers=swimmers.filter(function(x){return x.lic!==lic});
-  else { swimmers.push({lic:lic,name:b.dataset.name,year:+b.dataset.year||null,club:b.dataset.club}); toast(b.dataset.name+" · "+t("added")); }
+  else { swimmers.push({lic:lic,name:b.dataset.name,year:+b.dataset.year||null,club:b.dataset.club,g:b.dataset.g||"",grp:b.dataset.grp||""}); toast(b.dataset.name+" · "+t("added")); }
   LS.set("swimmers",swimmers);
   b.classList.toggle("on"); b.querySelector(".plus").textContent=b.classList.contains("on")?"✓":"+";
   $("doneRow").hidden=!swimmers.length;
-  load();
+  load(); loadHist();
 });
 $("doneBtn").addEventListener("click",function(){showAdd(false);window.scrollTo({top:0,behavior:"smooth"})});
 $("addBtn").addEventListener("click",function(){showAdd(true,false);$("addCard").scrollIntoView({behavior:"smooth",block:"start"})});
@@ -310,8 +364,9 @@ function load(){
   return fetch("/heatline/api/meet?id="+encodeURIComponent(meetId)+"&lic="+encodeURIComponent(lic),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
     var first=!DATA||DATA.id!==j.id; var prev=DATA; DATA=j; lastOk=Date.now();
     var m=curMeet(); if(m && j.meet && j.meet.name && (!m.name||m.city!==j.meet.city||(j.meet.date&&m.date!==j.meet.date))){m.name=j.meet.name;m.city=j.meet.city;if(j.meet.date)m.date=j.meet.date;LS.set("meets",meets)}
+    var ch=false; swimmers.forEach(function(s){var S=j.swimmers&&j.swimmers[s.lic]; if(S&&S.found){ if(!s.g&&S.g){s.g=S.g;ch=true} if(!s.year&&S.year){s.year=S.year;ch=true} if(!s.grp&&S.grp){s.grp=S.grp;ch=true} }}); if(ch) LS.set("swimmers",swimmers);
     announce(first);
-    render(); schedule();
+    render(); renderRes(); renderMin(); schedule();
   }).catch(function(){ $("lastTxt").textContent=t("noConn"); schedule(); });
 }
 function isLive(){ if(!DATA) return false; var m=curMeet()||{}; if(DATA.available) return DATA.meet.status!=="OFFICIAL"; return (m.date||DATA.meet.date)===today(); }
@@ -334,6 +389,9 @@ function resMsg(S,r){
   var txt=who+" · "+evName(e)+": "+(r.st?stTxt(r.st):fmt(r.time));
   if(r.place && !r.st) txt+=" · "+t("ord")(r.place)+" "+t("place");
   var g=gainOf(S,r); if(g>0) txt+=" · −"+g.toFixed(2)+" s";
+  if(!r.relay&&!r.st&&r.time){ var lic=Object.keys(DATA.swimmers).find(function(k){return DATA.swimmers[k]===S}); var e2=(DATA.events||{})[r.n]||{}, pool=DATA.meet.pool;
+    var prev=allRes(lic).filter(function(x){return !x.relay&&!x.st&&x.time&&x.ev.s===e2.s&&x.ev.d===e2.d&&x.pool===pool&&!(x.meetId===DATA.id&&x.n===r.n)});
+    if(prev.length && prev.every(function(x){return x.time>r.time})) txt+=" · "+t("rpNew"); }
   return txt;
 }
 function stTxt(st){return st==="DSQ"?t("dsq"):st==="DNS"||st==="WDR"?t("dns"):st==="DNF"?t("dnf"):st}
@@ -390,7 +448,7 @@ function eventsHtml(lic,S){
 $("swimmers").addEventListener("click",function(e){
   var b=e.target.closest("[data-rm]"); if(!b) return;
   swimmers=swimmers.filter(function(x){return x.lic!==b.dataset.rm}); LS.set("swimmers",swimmers);
-  if(!swimmers.length) showAdd(true,false); render();
+  if(!swimmers.length) showAdd(true,false); render(); loadHist(); renderMin();
 });
 $("refreshBtn").addEventListener("click",function(){var b=this;b.disabled=true;load().then(function(){b.disabled=false})});
 
@@ -412,7 +470,7 @@ document.querySelectorAll(".sheet-bg").forEach(function(bg){bg.addEventListener(
 $("fbBtn").addEventListener("click",function(){openSheet("fbSheet");setTimeout(function(){$("fbIn").focus()},50)});
 $("fbSend").addEventListener("click",function(){
   var txt=$("fbIn").value.trim(); if(!txt){toast(t("fbEmpty"));return}
-  var info="\n\n—\nHeatline v0.9 · "+lang+" · "+(isIOS()?"iOS":/Android/i.test(navigator.userAgent)?"Android":"other")+" · meet "+meetId;
+  var info="\n\n—\nHeatline v0.10 · "+lang+" · "+(isIOS()?"iOS":/Android/i.test(navigator.userAgent)?"Android":"other")+" · meet "+meetId;
   location.href="mailto:hello@lusoapps.com?subject="+encodeURIComponent("Heatline – "+t("feedback"))+"&body="+encodeURIComponent(txt+info);
   $("fbSheet").hidden=true; $("fbIn").value="";
 });
@@ -430,10 +488,141 @@ $("installBtn").addEventListener("click",function(){
 window.addEventListener("appinstalled",function(){$("installBtn").hidden=true;toast(t("installed"))});
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/heatline/sw.js",{scope:"/heatline/"}).catch(function(){});
 
+
+// ---------- season data (meets of the nation + which meets each swimmer swam) ----------
+var nation=LS.get("nation",null)||(lang==="es"?"ESP":"POR"), NAT=null, HIST={}, histBusy=false, MIN=null;
+function loadNat(){
+  return fetch("/heatline/data/"+nation+".json",{cache:"no-cache"}).then(function(r){return r.json()}).then(function(j){NAT=j;renderMeetList();renderCal();loadHist();}).catch(function(){NAT={meets:[],idx:{}};renderCal()});
+}
+function natMeet(id){return NAT&&NAT.meets.find(function(m){return m.id===id})}
+function dShort(f,to){try{var a=new Date(f+"T12:00:00"),o={day:"numeric",month:"short"};var s=a.toLocaleDateString(LOC[lang],o);if(to&&to!==f)s+="–"+new Date(to+"T12:00:00").toLocaleDateString(LOC[lang],o);return s}catch(e){return f}}
+function dY(d){try{return new Date(d+"T12:00:00").toLocaleDateString(LOC[lang],{day:"numeric",month:"short",year:"numeric"})}catch(e){return d}}
+var CAL=null;
+function loadCal(){ fetch("/heatline/data/cal-"+nation+".json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():null}).then(function(j){CAL=j;renderChamp()}).catch(function(){CAL=null;renderChamp()}); }
+function renderChamp(){
+  if(!CAL){$("champCard").hidden=true;return}
+  var td=today(), cats={}; swimmers.forEach(function(s){var c=catOf(s); if(c) cats[c.id.split("_")[0].replace(/[AB]$|1$/,"")]=c.label.split(" ·")[0]; });
+  var keys=Object.keys(cats);
+  var L=CAL.items.filter(function(x){return (x.to||x.date)>=td && (!keys.length||!x.cats||x.cats.some(function(c){return keys.indexOf(c)>=0}))});
+  $("champCard").hidden=false;
+  $("champNote").textContent=keys.length?t("champFor")+" "+keys.map(function(k){return cats[k]}).join(", ")+".":"";
+  $("champList").innerHTML=L.map(function(x){var days=Math.round((new Date(x.date+"T12:00:00")-new Date(td+"T12:00:00"))/864e5);
+    return "<div class='d'"+(x.dl?" style='color:var(--bad)'":"")+">"+esc(dShort(x.date,x.to))+"<div class='small muted' style='font-weight:500'>"+esc(dY(x.date).slice(-4))+"</div></div><div><b"+(x.dl?" style='color:var(--bad)'":"")+">"+esc(x.name)+"</b><div class='small muted'>"+esc([x.org,x.note,days>0?t("inDays").replace("{n}",days):""].filter(Boolean).join(" · "))+"</div></div>"}).join("");
+}
+function renderCal(){
+  document.querySelectorAll("#natSeg button").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.nat===nation))});
+  if(!NAT){$("calList").innerHTML="<p class='muted'>…</p>";return}
+  var td=today(), L=NAT.meets.filter(function(m){return m.to>=td}).sort(function(a,b){return a.from.localeCompare(b.from)});
+  renderChamp();
+  $("calList").innerHTML=L.length?L.map(function(m){var on=m.id===meetId;
+    return "<div class='d'>"+esc(dShort(m.from,m.to))+"</div><div><b>"+esc(m.name)+"</b><div class='small muted'>"+esc([m.city,m.course].filter(Boolean).join(" · "))+"</div><button class='btn "+(on?"":"ghost ")+"small' style='margin-top:6px' type='button' data-follow='"+esc(m.id)+"'>"+esc(on?t("following")+" ✓":t("follow"))+"</button></div>"}).join(""):"<p class='muted'>"+esc(t("calNone"))+"</p>";
+}
+$("calList").addEventListener("click",function(e){var b=e.target.closest("[data-follow]");if(!b)return;var m=natMeet(b.dataset.follow);
+  if(m&&!meets.some(function(x){return x.id===m.id})){meets.push({id:m.id,name:m.name,city:m.city,date:m.from});LS.set("meets",meets)}
+  setMeet(b.dataset.follow); renderCal(); showTab("live");});
+$("natSeg").addEventListener("click",function(e){var b=e.target.closest("[data-nat]");if(!b)return;nation=b.dataset.nat;LS.set("nation",nation);NAT=null;CAL=null;renderCal();loadNat();loadCal();loadMin()});
+
+// Results of the season: one request per meet the swimmer swam in; finished meets are kept on the phone.
+function loadHist(){
+  if(!NAT||!swimmers.length){renderRes();return}
+  var want={}; swimmers.forEach(function(s){(NAT.idx[s.lic]||[]).forEach(function(id){(want[id]=want[id]||[]).push(s.lic)})});
+  var ids=Object.keys(want), cache=LS.get("hist",{}), todo=[];
+  ids.forEach(function(id){var c=cache[id], lics=want[id].join(",");
+    if(c&&c.lics===lics){HIST[id]=c.data}else todo.push({id:id,lics:lics})});
+  Object.keys(HIST).forEach(function(id){if(!want[id])delete HIST[id]});
+  renderRes(); if(!todo.length) return;
+  histBusy=true; renderRes();
+  var i=0; function next(){ if(i>=todo.length){histBusy=false;renderRes();renderMin();return}
+    var x=todo[i++]; fetch("/heatline/api/meet?id="+x.id+"&lic="+encodeURIComponent(x.lics)).then(function(r){return r.json()}).then(function(j){
+      HIST[x.id]=j; if((NAT.done||[]).indexOf(x.id)>=0){var c=LS.get("hist",{});c[x.id]={lics:x.lics,data:j};LS.set("hist",c)}
+    }).catch(function(){}).then(next); }
+  next(); next();
+}
+// every individual result of a swimmer: season meets + the meet being followed
+function allRes(lic){
+  var out=[], seen={};
+  function add(id,J){ if(!J||!J.swimmers||!J.swimmers[lic]||seen[id]) return; seen[id]=1; var nm=natMeet(id)||{};
+    (J.swimmers[lic].results||[]).forEach(function(r){ var e=(J.events||{})[r.n]||{}; out.push(Object.assign({},r,{meetId:id,ev:e,pool:J.meet.pool||nm.course||"",date:e.date||nm.from||J.meet.date||"",meet:J.meet.name||nm.name||"",city:J.meet.city||nm.city||""})); }); }
+  if(DATA&&DATA.available) add(DATA.id,DATA);
+  Object.keys(HIST).forEach(function(id){add(id,HIST[id])});
+  return out;
+}
+function bestKey(r){return r.ev.s+"|"+r.ev.d+"|"+r.pool}
+function bests(lic){ var b={}; allRes(lic).forEach(function(r){ if(r.relay||r.st||!r.time||!r.ev.d) return; var k=bestKey(r); if(!b[k]||r.time<b[k].time) b[k]=r; }); return b; }
+var SORD={FREE:1,BACK:2,BREAST:3,FLY:4,MEDLEY:5};
+function renderRes(){
+  if(!swimmers.length){$("resBox").innerHTML="<div class='card'><p class='muted' style='margin:0'>"+esc(t("pickFirst"))+"</p></div>";return}
+  $("resBox").innerHTML=swimmers.map(function(s){
+    var R=allRes(s.lic), B=bests(s.lic);
+    var h="<div class='card'><h2>"+esc(s.name)+"</h2><div class='small muted'>"+esc([s.year?t("born")+" "+s.year:"",s.club].filter(Boolean).join(" · "))+"</div>";
+    if(!R.length){h+="<p class='muted small' style='margin:10px 0 0'>"+esc(histBusy?t("resLoading"):t("resNone"))+"</p></div>";return h}
+    var keys=Object.keys(B).sort(function(a,b){var x=B[a].ev,y=B[b].ev;return (SORD[x.s]||9)-(SORD[y.s]||9)||x.d-y.d||B[a].pool.localeCompare(B[b].pool)});
+    h+="<h3 class='mh'>"+esc(t("best"))+"</h3><div class='tbl'><table><thead><tr><th></th><th>"+esc(t("pool"))+"</th><th>"+esc(t("bestT"))+"</th></tr></thead><tbody>"+keys.map(function(k){var r=B[k];return "<tr><td><b>"+esc(evName(r.ev))+"</b><div class='small muted'>"+esc(r.city)+" · "+esc(dShort(r.date))+"</div></td><td>"+esc(r.pool)+"</td><td><b>"+fmt(r.time)+"</b></td></tr>"}).join("")+"</tbody></table></div>";
+    var by={}; R.forEach(function(r){(by[r.meetId]=by[r.meetId]||[]).push(r)});
+    var ms=Object.keys(by).sort(function(a,b){return (by[b][0].date||"").localeCompare(by[a][0].date||"")});
+    h+="<h3 class='mh'>"+esc(t("season"))+"</h3>";
+    ms.forEach(function(id){var L=by[id].sort(function(a,b){return a.n-b.n});
+      h+="<div style='margin-top:10px'><b>"+esc(L[0].meet)+"</b><div class='small muted'>"+esc(L[0].city)+" · "+esc(dShort(L[0].date))+" · "+esc(L[0].pool)+"</div>";
+      L.forEach(function(r){var isPB=!r.relay&&!r.st&&r.time&&B[bestKey(r)]===r;
+        var right=r.st?"<span class='badge b-bad'>"+esc(stTxt(r.st))+"</span>":"<div class='t' style='font-size:19px'>"+fmt(r.time)+"</div>";
+        var sub=[r.place&&!r.st?t("ord")(r.place)+" "+t("place"):"", r.relay?(r.team||"")+" · "+r.leg+".º "+t("leg")+(r.legTime?": "+fmt(r.legTime):""):"", r.pts?r.pts+" "+t("pts"):""].filter(Boolean).join(" · ");
+        h+="<div class='ev'><div class='nm'>"+esc((r.relay?t("relay")+" ":"")+evName(r.ev))+(isPB?"<span class='pb'>"+esc(t("pbTag"))+"</span>":"")+"</div><div>"+right+"</div>"+(sub?"<div class='sub'>"+esc(sub)+"</div>":"")+"</div>";});
+      h+="</div>";});
+    h+="<p class='small muted' style='margin:12px 0 0'>"+esc(t("rpNote"))+"</p></div>";
+    return h;
+  }).join("");
+}
+
+// ---------- standards (federation qualifying times) ----------
+function loadMin(){ return fetch("/heatline/data/min-"+nation+".json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():null}).then(function(j){MIN=j;renderMin()}).catch(function(){MIN=null;renderMin()}); }
+function catOf(s){
+  if(!MIN) return null; var g=s.g||"";
+  return MIN.cats.find(function(c){return c.g===g && c.years.indexOf(+s.year)>=0}) || null;
+}
+function renderMin(){
+  if(!swimmers.length){$("minBox").innerHTML="<div class='card'><p class='muted' style='margin:0'>"+esc(t("pickFirst"))+"</p></div>";return}
+  $("minBox").innerHTML=swimmers.map(function(s){
+    var h="<div class='card'><h2>"+esc(s.name)+"</h2>";
+    if(!MIN) return h+"<p class='muted small' style='margin:8px 0 0'>"+esc(t("minSoon"))+"</p></div>";
+    var c=catOf(s);
+    if(!c) return h+"<p class='muted small' style='margin:8px 0 0'>"+esc(s.g?t("minSoon"):t("minNoCat"))+"</p></div>";
+    h+="<div class='small muted'>"+esc(t("minCat"))+": <b>"+esc(c.label)+"</b></div>";
+    var R=allRes(s.lic), rows=MIN.times[c.id]||[], C=c.cols;
+    function bestIn(x,w){var b=null;R.forEach(function(r){if(r.relay||r.st||!r.time)return;if(r.ev.s!==x.s||r.ev.d!==x.d||r.pool!==x.pool)return;if(w&&(r.date<w.from||r.date>w.to))return;if(!b||r.time<b.time)b=r});return b}
+    ["25m","50m"].forEach(function(pool){
+      var rr=rows.filter(function(x){return x.pool===pool}); if(!rr.length) return;
+      h+="<h3 class='mh'>"+esc(t("pool"))+" "+pool+"</h3><div class='tbl'><table><thead><tr><th></th><th>"+esc(t("bestT"))+"</th>"+C.map(function(col){return "<th>"+esc(col.label)+"</th>"}).join("")+"</tr></thead><tbody>";
+      rr.forEach(function(x){
+        var any=bestIn(x,null);
+        h+="<tr><td><b>"+esc(evName(x))+"</b></td><td>"+(any?"<b>"+fmt(any.time)+"</b>":"<span class='muted'>—</span>")+"</td>"+C.map(function(col){
+          var min=x.v[col.k]; if(min==null) return "<td class='muted'>—</td>";
+          var b=bestIn(x,col), top="<div>"+fmt(min)+"</div>";
+          if(!b) return "<td>"+top+"</td>";
+          var g=Math.round((b.time-min)*100)/100;
+          return "<td>"+top+(g<=0?"<span class='badge b-ok'>"+esc(t("minDone"))+"</span>":"<div class='small "+(g<1?"near":"muted")+"'>"+esc(t("minMiss"))+" "+g.toFixed(2)+"</div>")+"</td>";
+        }).join("")+"</tr>";
+      });
+      h+="</tbody></table></div>";
+    });
+    h+="<p class='small muted' style='margin:10px 0 0'>"+C.map(function(col){return "<b>"+esc(col.label)+"</b> ("+esc(col.where)+"): "+esc(t("minWin"))+" "+esc(dY(col.from))+" "+esc(t("to"))+" "+esc(dY(col.to))}).join(". ")+". "+esc(t("minNear"))+"<br>"+esc(MIN.source||"")+"</p></div>";
+    return h;
+  }).join("");
+}
+
+// ---------- tabs ----------
+function showTab(id){
+  document.querySelectorAll("#tabs button").forEach(function(b){b.setAttribute("aria-selected",String(b.dataset.tab===id))});
+  ["live","res","min","cal"].forEach(function(x){$("tab-"+x).hidden=x!==id});
+  LS.set("tab",id); window.scrollTo(0,0);
+  if(id==="res") renderRes(); if(id==="min") renderMin(); if(id==="cal") renderCal();
+}
+$("tabs").addEventListener("click",function(e){var b=e.target.closest("[data-tab]");if(b)showTab(b.dataset.tab)});
+
 // ---------- start ----------
 applyLang();
 showAdd(!swimmers.length,false);
-load();
+showTab(swimmers.length?LS.get("tab","live"):"live");
+load(); loadNat(); loadMin(); loadCal();
 })();
 </script>
 </body>

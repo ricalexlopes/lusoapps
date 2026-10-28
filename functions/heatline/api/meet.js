@@ -26,6 +26,7 @@ export async function onRequestGet({ request }) {
       name: ea ? ea.first + " " + ea.last : (pa.first + " " + pa.last),
       year: (ea && ea.year) || (pa && pa.year) || null,
       club: (ea && ea.club) || (pa && pa.club) || "",
+      g: (ea && ea.g) || (pa && pa.g) || "", grp: (ea && ea.grp) || "",
       entries: ea ? ea.ev.map(x => ({ n: x.n, et: secs(x.et), ep: x.ep, x: x.x })) : [],
       results: pa ? resultsOf(P, lic) : [],
     };

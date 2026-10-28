@@ -13,7 +13,7 @@ export async function onRequestGet({ request }) {
   const add = (a) => {
     const full = norm(a.first + " " + a.last);
     if (words.every(w => full.split(" ").some(p => p.startsWith(w))) && !found.has(a.lic))
-      found.set(a.lic, { lic: a.lic, name: (a.first + " " + a.last).trim(), year: a.year || null, club: a.club || "" });
+      found.set(a.lic, { lic: a.lic, name: (a.first + " " + a.last).trim(), year: a.year || null, club: a.club || "", g: a.g || "", grp: a.grp || "" });
   };
   const E = ENTRIES[id];
   if (E) E.athletes.forEach(add);
