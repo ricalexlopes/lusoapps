@@ -5,7 +5,3 @@
   Content-Type: text/plain; charset=utf-8
 /ads.txt
   Content-Type: text/plain; charset=utf-8
-/heatline/*
-  X-Robots-Tag: noindex, nofollow
-/functions/*
-  X-Robots-Tag: noindex, nofollow
