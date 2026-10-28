@@ -1,9 +1,20 @@
 // GET /heatline/api/search?meet=10989&q=ric  ->  up to 12 swimmers whose name matches, from the entry list
 // and, once the meet has started, from the results file. Name, birth year and club only.
 import ENTRIES from "../_data/entries.js";
+
+// Entry lists of upcoming meets are built daily into /heatline/data/entries/<id>.json (tools/season.py).
+async function entriesOf(env, request, id) {
+  try {
+    if (env && env.ASSETS) {
+      const r = await env.ASSETS.fetch(new URL(`/heatline/data/entries/${id}.json`, request.url));
+      if (r.ok) return await r.json();
+    }
+  } catch (e) {}
+  return ENTRIES[id] || null;
+}
 import { loadResults, parseMeet, norm } from "../_lib/lenex.js";
 
-export async function onRequestGet({ request }) {
+export async function onRequestGet({ request, env }) {
   const u = new URL(request.url);
   const id = u.searchParams.get("meet") || "", q = norm(u.searchParams.get("q"));
   if (!/^\d{1,7}$/.test(id)) return json({ error: "bad meet" }, 400);
@@ -15,7 +26,7 @@ export async function onRequestGet({ request }) {
     if (words.every(w => full.split(" ").some(p => p.startsWith(w))) && !found.has(a.lic))
       found.set(a.lic, { lic: a.lic, name: (a.first + " " + a.last).trim(), year: a.year || null, club: a.club || "", g: a.g || "", grp: a.grp || "" });
   };
-  const E = ENTRIES[id];
+  const E = await entriesOf(env, request, id);
   if (E) E.athletes.forEach(add);
   try {
     const xml = await loadResults(id);

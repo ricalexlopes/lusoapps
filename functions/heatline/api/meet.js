@@ -1,14 +1,25 @@
 // GET /heatline/api/meet?id=10989&lic=219009,216993  ->  the meet, its programme, and for each chosen
 // swimmer their entries and results. Other swimmers' data are never sent.
 import ENTRIES from "../_data/entries.js";
+
+// Entry lists of upcoming meets are built daily into /heatline/data/entries/<id>.json (tools/season.py).
+async function entriesOf(env, request, id) {
+  try {
+    if (env && env.ASSETS) {
+      const r = await env.ASSETS.fetch(new URL(`/heatline/data/entries/${id}.json`, request.url));
+      if (r.ok) return await r.json();
+    }
+  } catch (e) {}
+  return ENTRIES[id] || null;
+}
 import { loadResults, parseMeet, resultsOf, secs } from "../_lib/lenex.js";
 
-export async function onRequestGet({ request }) {
+export async function onRequestGet({ request, env }) {
   const u = new URL(request.url);
   const id = u.searchParams.get("id") || "";
   const lics = (u.searchParams.get("lic") || "").split(",").filter(x => /^[\w-]{1,20}$/.test(x)).slice(0, 30);
   if (!/^\d{1,7}$/.test(id)) return json({ error: "bad meet" }, 400);
-  const E = ENTRIES[id];
+  const E = await entriesOf(env, request, id);
   let P = null, err = "";
   try { const xml = await loadResults(id); if (xml) P = parseMeet(xml); } catch (e) { err = String(e.message || e); }
 

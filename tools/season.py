@@ -5,7 +5,7 @@ the results of the chosen swimmer from the meet itself.
 
 Run daily by .github/workflows/heatline-season.yml. Usage: python3 tools/season.py [NATION ...]
 """
-import html, io, json, os, re, sys, urllib.request, zipfile
+import html, io, json, os, re, subprocess, sys, tempfile, urllib.request, zipfile
 from datetime import date
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "heatline", "data")
@@ -60,6 +60,59 @@ def licenses_in(meet_id):
     return sorted(set(re.findall(r'<ATHLETE [^>]*?license="([^"]+)"', xml)))
 
 
+# --- entry lists (EntryList_N.pdf, Splash Meet Manager) -----------------------------------
+STK = {"livres": "FREE", "freestyle": "FREE", "libre": "FREE", "costas": "BACK", "backstroke": "BACK", "espalda": "BACK",
+       "bruços": "BREAST", "brucos": "BREAST", "breaststroke": "BREAST", "braza": "BREAST", "mariposa": "FLY", "butterfly": "FLY",
+       "estilos": "MEDLEY", "medley": "MEDLEY"}
+HEAD = re.compile(r"(?:Prova|Event|Prueba|Evento)\s+(\d+)\s+(Femin\w*\.?|Masc\w*\.?|Misto|Mixto|Mixed|Women|Men|Girls|Boys|Mujeres|Hombres)[^,]*,\s*(\d+)\s*(?:x\s*(\d+))?\s*m\s+(\S+)", re.I)
+ROW = re.compile(r"^\s*(\d+)\s+(.+?,\s*[^\d]+?)\s*(\d{2})\s+(\d{1,2}\s*-\s*\d{1,2}|\d{1,2}\s*\+|[A-Z]{2,4}(?: [A-Z])?|Open|ABS)\s*(\d{4,8})\s+(.+?)\s*(\d{0,2}:?\d{1,2}\.\d{2}|NT)?\s*(EXH)?\s*(25m|50m)?\s*$")
+
+
+def pdf_text(raw):
+    with tempfile.NamedTemporaryFile(suffix=".pdf") as f:
+        f.write(raw); f.flush()
+        return subprocess.run(["pdftotext", "-layout", f.name, "-"], capture_output=True, text=True).stdout
+
+
+def entries_of(meet_id):
+    page = get(f"https://live.swimrankings.net/{meet_id}/").decode("utf-8", "replace")
+    files = sorted(set(re.findall(r'href="(EntryList_\d+\.pdf)"', page)), key=lambda x: int(re.findall(r"\d+", x)[0]))
+    if not files:
+        return None
+    ath, events = {}, []
+    for fn in files:
+        try:
+            t = pdf_text(get(f"https://live.swimrankings.net/{meet_id}/{fn}"))
+        except Exception:
+            continue
+        h = HEAD.search(t)
+        if not h:
+            continue
+        num = int(h.group(1)); gw = h.group(2).lower()
+        g = "F" if gw[0] in "fwgm" and not gw.startswith(("masc", "men", "mix", "mis")) else "M" if gw.startswith(("masc", "men", "boys", "hom")) else "X"
+        if gw.startswith(("muj", "wom", "girl", "fem")): g = "F"
+        relay = h.group(4) is not None
+        dist = int(h.group(4)) if relay else int(h.group(3)); cnt = int(h.group(3)) if relay else 1
+        st = STK.get(h.group(5).lower().strip(".,"), h.group(5))
+        tm = re.search(r"(\d{2})/(\d{2})/(\d{4})(?:\s*-\s*(\d{1,2}:\d{2}))?", t)
+        ev = {"n": num, "g": g, "d": dist, "rc": cnt, "s": st, "date": f"{tm.group(3)}-{tm.group(2)}-{tm.group(1)}" if tm else "", "time": (tm.group(4) or "") if tm else ""}
+        events.append(ev)
+        if relay:
+            continue
+        for line in t.splitlines():
+            m = ROW.match(line)
+            if not m:
+                continue
+            name, yy, grp, lic, club, et, exh, pool = m.group(2), int(m.group(3)), re.sub(r"\s+", " ", m.group(4)), m.group(5), m.group(6).strip(), m.group(7), m.group(8), m.group(9)
+            first, last = [x.strip() for x in name.split(",", 1)]
+            a = ath.setdefault(lic, {"lic": lic, "first": first, "last": last.title(), "year": (1900 if yy > 40 else 2000) + yy, "g": g, "grp": grp, "club": club, "ev": []})
+            if not any(e["n"] == num for e in a["ev"]):
+                a["ev"].append({"n": num, "et": None if et in (None, "NT") else et, "ep": pool, "x": 1 if exh else 0})
+    if not ath:
+        return None
+    return {"meet": meet_id, "events": sorted(events, key=lambda e: e["n"]), "athletes": list(ath.values())}
+
+
 def run(nation):
     path = os.path.join(ROOT, f"{nation}.json")
     old = json.load(open(path)) if os.path.exists(path) else {"nation": nation, "meets": [], "idx": {}, "done": []}
@@ -82,8 +135,29 @@ def run(nation):
             idx.setdefault(l, set()).add(m["id"])
         if finished:
             done.add(m["id"])
+    # entry lists of the meets of the next 3 weeks (they change until the meet starts)
+    edir = os.path.join(ROOT, "entries"); os.makedirs(edir, exist_ok=True)
+    soon = (date.fromordinal(date.today().toordinal() + 21)).isoformat()
+    eidx = {}
+    for m in meets.values():
+        if m["to"] < today or m["from"] > soon:
+            continue
+        try:
+            E = entries_of(m["id"])
+        except Exception as e:
+            print("entries failed", m["id"], e); E = None
+        if not E:
+            continue
+        E["info"] = {"name": m["name"], "city": m["city"], "date": m["from"], "to": m["to"]}
+        json.dump(E, open(os.path.join(edir, m["id"] + ".json"), "w"), ensure_ascii=False, separators=(",", ":"))
+        for a in E["athletes"]:
+            eidx.setdefault(a["lic"], []).append(m["id"])
+    for f in os.listdir(edir):  # drop entry lists of past meets
+        mid = f.split(".")[0]
+        if mid in meets and meets[mid]["to"] < today:
+            os.remove(os.path.join(edir, f))
     keep = sorted((m for m in meets.values() if m["to"] >= SEASON_START), key=lambda x: (x["from"], x["id"]))
-    data = {"nation": nation, "updated": today, "meets": keep, "idx": {k: sorted(v, key=int) for k, v in sorted(idx.items())}, "done": sorted(done, key=int)}
+    data = {"nation": nation, "updated": today, "meets": keep, "idx": {k: sorted(v, key=int) for k, v in sorted(idx.items())}, "done": sorted(done, key=int), "eidx": {k: sorted(v, key=int) for k, v in sorted(eidx.items())}}
     os.makedirs(ROOT, exist_ok=True)
     json.dump(data, open(path, "w"), ensure_ascii=False, separators=(",", ":"))
     print(nation, len(keep), "meets,", len(done), "indexed,", len(idx), "swimmers")

@@ -176,7 +176,7 @@ tr:last-child td{border-bottom:0}
   <div class="card" id="champCard" hidden><h2 data-t="champTitle"></h2><p class="small muted" id="champNote" style="margin:6px 0 10px"></p><div class="cal" id="champList"></div></div>
 </section>
 
-  <p class="foot"><span data-t="data"></span> <a href="https://live.swimrankings.net/" target="_blank" rel="noopener">live.swimrankings.net</a> · <span data-t="notAff"></span><br><span data-t="privacy"></span> <a href="/privacy/" data-t="privLink"></a> · Heatline by <a href="/">LusoApps</a> · v0.10</p>
+  <p class="foot"><span data-t="data"></span> <a href="https://live.swimrankings.net/" target="_blank" rel="noopener">live.swimrankings.net</a> · <span data-t="notAff"></span><br><span data-t="privacy"></span> <a href="/privacy/" data-t="privLink"></a> · Heatline by <a href="/">LusoApps</a> · v0.11</p>
 </main></div>
 
 <nav class="dock"><div class="wrap">
@@ -262,15 +262,15 @@ var LANGS=["pt","en","es"];
 var lang=LS.get("lang",null)||(function(){var l=(navigator.language||"en").slice(0,2).toLowerCase();return LANGS.indexOf(l)>=0?l:"en"})();
 function t(k){return (T[lang]&&T[lang][k]!=null)?T[lang][k]:T.en[k]}
 var LOC={pt:"pt-PT",en:"en-GB",es:"es-ES"};
-Object.assign(T.pt,{inDays:"daqui a {n} dias",champTitle:"Campeonatos e prazos",champFor:"Só para a categoria dos teus nadadores:",tLive:"Ao vivo",tRes:"Resultados",tMin:"Mínimos",tCal:"Calendário",calTitle:"Próximas provas",calNote:"Competições com resultados ao vivo. Toca em «Seguir» para a acompanhar no separador Ao vivo.",follow:"Seguir",following:"A seguir",calNone:"Sem provas anunciadas.",
+Object.assign(T.pt,{upcoming:"Próximas provas",entered:"Inscrito",inDays:"daqui a {n} dias",champTitle:"Campeonatos e prazos",champFor:"Só para a categoria dos teus nadadores:",tLive:"Ao vivo",tRes:"Resultados",tMin:"Mínimos",tCal:"Calendário",calTitle:"Próximas provas",calNote:"Competições com resultados ao vivo. Toca em «Seguir» para a acompanhar no separador Ao vivo.",follow:"Seguir",following:"A seguir",calNone:"Sem provas anunciadas.",
  best:"Melhores tempos",season:"Provas da época",resLoading:"A carregar os resultados da época…",resNone:"Ainda sem resultados esta época.",rpNote:"RP = recorde pessoal (melhor tempo nessa prova e piscina).",
  minCat:"Categoria",minSoon:"Os mínimos desta categoria ainda não estão na app.",minNoCat:"Não foi possível saber a categoria deste nadador.",zon:"Zonais",nac:"Nacionais",minMiss:"falta",minDone:"✓ feito",minNear:"Amarelo: a menos de 1 segundo do mínimo.",minWin:"Contam os tempos de",to:"a",
  pickFirst:"Escolhe primeiro um nadador no separador Ao vivo.",pool:"Piscina",bestT:"Melhor",rpNew:"Recorde pessoal!"});
-Object.assign(T.en,{inDays:"in {n} days",champTitle:"Championships and deadlines",champFor:"Only for your swimmers' age groups:",tLive:"Live",tRes:"Results",tMin:"Standards",tCal:"Calendar",calTitle:"Upcoming meets",calNote:"Meets with live results. Tap “Follow” to watch it in the Live tab.",follow:"Follow",following:"Following",calNone:"No meets announced.",
+Object.assign(T.en,{upcoming:"Coming up",entered:"Entered",inDays:"in {n} days",champTitle:"Championships and deadlines",champFor:"Only for your swimmers' age groups:",tLive:"Live",tRes:"Results",tMin:"Standards",tCal:"Calendar",calTitle:"Upcoming meets",calNote:"Meets with live results. Tap “Follow” to watch it in the Live tab.",follow:"Follow",following:"Following",calNone:"No meets announced.",
  best:"Best times",season:"This season's meets",resLoading:"Loading this season's results…",resNone:"No results this season yet.",rpNote:"PB = personal best (best time in that event and pool).",
  minCat:"Age group",minSoon:"The standards for this age group are not in the app yet.",minNoCat:"Couldn't work out this swimmer's age group.",zon:"Regional",nac:"National",minMiss:"to go",minDone:"✓ made",minNear:"Amber: less than 1 second away.",minWin:"Times count from",to:"to",
  pickFirst:"First choose a swimmer in the Live tab.",pool:"Pool",bestT:"Best",rpNew:"Personal best!"});
-Object.assign(T.es,{inDays:"dentro de {n} días",champTitle:"Campeonatos y plazos",champFor:"Solo para la categoría de tus nadadores:",tLive:"En directo",tRes:"Resultados",tMin:"Mínimas",tCal:"Calendario",calTitle:"Próximas competiciones",calNote:"Competiciones con resultados en directo. Toca «Seguir» para verla en En directo.",follow:"Seguir",following:"Siguiendo",calNone:"Sin competiciones anunciadas.",
+Object.assign(T.es,{upcoming:"Próximas competiciones",entered:"Inscrito",inDays:"dentro de {n} días",champTitle:"Campeonatos y plazos",champFor:"Solo para la categoría de tus nadadores:",tLive:"En directo",tRes:"Resultados",tMin:"Mínimas",tCal:"Calendario",calTitle:"Próximas competiciones",calNote:"Competiciones con resultados en directo. Toca «Seguir» para verla en En directo.",follow:"Seguir",following:"Siguiendo",calNone:"Sin competiciones anunciadas.",
  best:"Mejores marcas",season:"Competiciones de la temporada",resLoading:"Cargando los resultados de la temporada…",resNone:"Aún sin resultados esta temporada.",rpNote:"MM = mejor marca personal (en esa prueba y piscina).",
  minCat:"Categoría",minSoon:"Las mínimas de esta categoría aún no están en la app.",minNoCat:"No se pudo saber la categoría de este nadador.",zon:"Zonales",nac:"Nacionales",minMiss:"faltan",minDone:"✓ hecha",minNear:"Amarillo: a menos de 1 segundo.",minWin:"Cuentan los tiempos del",to:"al",
  pickFirst:"Elige primero un nadador en En directo.",pool:"Piscina",bestT:"Mejor",rpNew:"¡Mejor marca personal!"});
@@ -426,7 +426,7 @@ function eventsHtml(lic,S){
   (S.results||[]).forEach(function(r){ var k=r.relay?r.n+"R":String(r.n); rows[k]=rows[k]||{n:r.n,res:[]}; rows[k].res.push(r); });
   var merged=rows;
   return Object.keys(merged).map(function(k){return merged[k]}).sort(function(a,b){return a.n-b.n}).map(function(x){
-    var e=E[x.n]||{}, r=x.res[0], when=[e.time||"", t("event")+" "+x.n].filter(Boolean).join(" · ");
+    var e=E[x.n]||{}, r=x.res[0], when=[e.date?dShort(e.date):"", e.time||"", t("event")+" "+x.n].filter(Boolean).join(" · ");
     var title=r&&r.relay?(t("relay")+" "+evName(e)):evName(e);
     var right="", sub=[];
     if(r){
@@ -470,7 +470,7 @@ document.querySelectorAll(".sheet-bg").forEach(function(bg){bg.addEventListener(
 $("fbBtn").addEventListener("click",function(){openSheet("fbSheet");setTimeout(function(){$("fbIn").focus()},50)});
 $("fbSend").addEventListener("click",function(){
   var txt=$("fbIn").value.trim(); if(!txt){toast(t("fbEmpty"));return}
-  var info="\n\n—\nHeatline v0.10 · "+lang+" · "+(isIOS()?"iOS":/Android/i.test(navigator.userAgent)?"Android":"other")+" · meet "+meetId;
+  var info="\n\n—\nHeatline v0.11 · "+lang+" · "+(isIOS()?"iOS":/Android/i.test(navigator.userAgent)?"Android":"other")+" · meet "+meetId;
   location.href="mailto:hello@lusoapps.com?subject="+encodeURIComponent("Heatline – "+t("feedback"))+"&body="+encodeURIComponent(txt+info);
   $("fbSheet").hidden=true; $("fbIn").value="";
 });
@@ -515,16 +515,36 @@ function renderCal(){
   var td=today(), L=NAT.meets.filter(function(m){return m.to>=td}).sort(function(a,b){return a.from.localeCompare(b.from)});
   renderChamp();
   $("calList").innerHTML=L.length?L.map(function(m){var on=m.id===meetId;
-    return "<div class='d'>"+esc(dShort(m.from,m.to))+"</div><div><b>"+esc(m.name)+"</b><div class='small muted'>"+esc([m.city,m.course].filter(Boolean).join(" · "))+"</div><button class='btn "+(on?"":"ghost ")+"small' style='margin-top:6px' type='button' data-follow='"+esc(m.id)+"'>"+esc(on?t("following")+" ✓":t("follow"))+"</button></div>"}).join(""):"<p class='muted'>"+esc(t("calNone"))+"</p>";
+    return "<div class='d'>"+esc(dShort(m.from,m.to))+"</div><div><b>"+esc(m.name)+"</b><div class='small muted'>"+esc([m.city,m.course].filter(Boolean).join(" · "))+"</div>"+(function(){var who=swimmers.filter(function(s){return NAT.eidx&&(NAT.eidx[s.lic]||[]).indexOf(m.id)>=0}).map(function(s){return s.name.split(" ")[0]});return who.length?"<span class='badge b-ok'>"+esc(t("entered"))+": "+esc(who.join(", "))+"</span><br>":""})()+"<button class='btn "+(on?"":"ghost ")+"small' style='margin-top:6px' type='button' data-follow='"+esc(m.id)+"'>"+esc(on?t("following")+" ✓":t("follow"))+"</button></div>"}).join(""):"<p class='muted'>"+esc(t("calNone"))+"</p>";
 }
-$("calList").addEventListener("click",function(e){var b=e.target.closest("[data-follow]");if(!b)return;var m=natMeet(b.dataset.follow);
+function follow(e){var b=e.target.closest("[data-follow]");if(!b)return;var m=natMeet(b.dataset.follow);
   if(m&&!meets.some(function(x){return x.id===m.id})){meets.push({id:m.id,name:m.name,city:m.city,date:m.from});LS.set("meets",meets)}
-  setMeet(b.dataset.follow); renderCal(); showTab("live");});
+  setMeet(b.dataset.follow); renderCal(); showTab("live");}
+$("calList").addEventListener("click",follow); $("resBox").addEventListener("click",follow);
 $("natSeg").addEventListener("click",function(e){var b=e.target.closest("[data-nat]");if(!b)return;nation=b.dataset.nat;LS.set("nation",nation);NAT=null;CAL=null;renderCal();loadNat();loadCal();loadMin()});
 
 // Results of the season: one request per meet the swimmer swam in; finished meets are kept on the phone.
+var UPC={};
+function loadUpc(){
+  if(!NAT||!NAT.eidx) return; var want={};
+  swimmers.forEach(function(s){(NAT.eidx[s.lic]||[]).forEach(function(id){(want[id]=want[id]||[]).push(s.lic)})});
+  Object.keys(UPC).forEach(function(id){if(!want[id])delete UPC[id]});
+  Object.keys(want).forEach(function(id){ fetch("/heatline/api/meet?id="+id+"&lic="+encodeURIComponent(want[id].join(","))).then(function(r){return r.json()}).then(function(j){UPC[id]=j;renderRes();renderCal()}).catch(function(){}); });
+}
+function upcHtml(lic){
+  var ids=Object.keys(UPC).filter(function(id){var S=UPC[id].swimmers&&UPC[id].swimmers[lic];return S&&S.entries&&S.entries.length}).sort(function(a,b){return (UPC[a].meet.date||"").localeCompare(UPC[b].meet.date||"")});
+  if(!ids.length) return "";
+  var h="<h3 class='mh'>"+esc(t("upcoming"))+"</h3>";
+  ids.forEach(function(id){var J=UPC[id], S=J.swimmers[lic], on=id===meetId;
+    h+="<div style='margin-top:8px'><div class='sw-h'><div><b>"+esc(J.meet.name)+"</b><div class='small muted'>"+esc([J.meet.city,dShort(J.meet.date,J.meet.to)].filter(Boolean).join(" · "))+"</div></div><button class='btn "+(on?"":"ghost ")+"small' type='button' data-follow='"+esc(id)+"'>"+esc(on?t("following")+" ✓":t("follow"))+"</button></div>";
+    S.entries.slice().sort(function(a,b){return a.n-b.n}).forEach(function(x){var e=(J.events||{})[x.n]||{};
+      h+="<div class='ev'><div><div class='nm'>"+esc(evName(e))+"</div><div class='when'>"+esc([dShort(e.date),e.time,t("event")+" "+x.n].filter(Boolean).join(" · "))+"</div></div><div class='tw'>"+(x.et?esc(t("entry"))+"<br><b style='font-size:15px;color:var(--ink)'>"+fmt(x.et)+"</b>"+(x.ep?" <span class='small'>"+x.ep+"</span>":""):esc(t("noEntry")))+"</div></div>";});
+    h+="</div>";});
+  return h;
+}
 function loadHist(){
   if(!NAT||!swimmers.length){renderRes();return}
+  loadUpc();
   var want={}; swimmers.forEach(function(s){(NAT.idx[s.lic]||[]).forEach(function(id){(want[id]=want[id]||[]).push(s.lic)})});
   var ids=Object.keys(want), cache=LS.get("hist",{}), todo=[];
   ids.forEach(function(id){var c=cache[id], lics=want[id].join(",");
@@ -555,6 +575,7 @@ function renderRes(){
   $("resBox").innerHTML=swimmers.map(function(s){
     var R=allRes(s.lic), B=bests(s.lic);
     var h="<div class='card'><h2>"+esc(s.name)+"</h2><div class='small muted'>"+esc([s.year?t("born")+" "+s.year:"",s.club].filter(Boolean).join(" · "))+"</div>";
+    h+=upcHtml(s.lic);
     if(!R.length){h+="<p class='muted small' style='margin:10px 0 0'>"+esc(histBusy?t("resLoading"):t("resNone"))+"</p></div>";return h}
     var keys=Object.keys(B).sort(function(a,b){var x=B[a].ev,y=B[b].ev;return (SORD[x.s]||9)-(SORD[y.s]||9)||x.d-y.d||B[a].pool.localeCompare(B[b].pool)});
     h+="<h3 class='mh'>"+esc(t("best"))+"</h3><div class='tbl'><table><thead><tr><th></th><th>"+esc(t("pool"))+"</th><th>"+esc(t("bestT"))+"</th></tr></thead><tbody>"+keys.map(function(k){var r=B[k];return "<tr><td><b>"+esc(evName(r.ev))+"</b><div class='small muted'>"+esc(r.city)+" · "+esc(dShort(r.date))+"</div></td><td>"+esc(r.pool)+"</td><td><b>"+fmt(r.time)+"</b></td></tr>"}).join("")+"</tbody></table></div>";
