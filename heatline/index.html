@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B3D63">
+<title>Heatline · Swim results live</title>
+<meta name="description" content="Follow your swimmer's events and results live, with an alert on every new time.">
+<link rel="manifest" href="/heatline/manifest.json">
+<link rel="icon" href="/heatline/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/heatline/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Heatline">
+<style>
+:root{
+  --bg:#EEF3F8; --card:#fff; --ink:#0E1B29; --muted:#5A6A7B; --line:#D8E2EC;
+  --pool:#0B3D63; --pool-2:#1C6FA8; --soft:#E3EEF8; --on:#fff; --accent:#FF7A3D;
+  --ok:#0F7F59; --ok-soft:#DDF2E8; --bad:#B3322B; --bad-soft:#F8E3E1; --warn:#9A5B00; --warn-soft:#FFF0D3;
+  --r:16px; color-scheme:light;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#08121C; --card:#101E2B; --ink:#E6EEF6; --muted:#97A8B9; --line:#223548;
+  --pool:#5AAEEA; --pool-2:#86C6F2; --soft:#132A3E; --on:#06111B;
+  --ok:#4FD1A0; --ok-soft:#10302A; --bad:#FF8A80; --bad-soft:#3A1C1B; --warn:#F2B04A; --warn-soft:#33260F; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,textarea,select{font:inherit;color:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+header{background:linear-gradient(155deg,#0B3D63,#1C6FA8);color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) 0 16px;position:relative}
+header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:repeating-linear-gradient(90deg,#FF7A3D 0 16px,#fff 16px 32px);opacity:.9}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:36px;height:36px;border-radius:10px}
+.brand b{font-size:21px;letter-spacing:-.01em}
+.brand span{display:block;font-size:13px;opacity:.85;font-weight:500}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hbtn{border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:999px;padding:8px 12px;min-height:40px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+main{display:grid;gap:14px;padding:16px 0 calc(110px + env(safe-area-inset-bottom,0px))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h2{margin:0 0 6px;font-size:18px;letter-spacing:-.01em}
+.muted{color:var(--muted)} .small{font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=search],input[type=url],textarea,select{width:100%;font-size:16px;min-height:48px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pool-2)}
+textarea{min-height:120px;resize:vertical}
+.btn{border:0;border-radius:12px;padding:12px 16px;min-height:48px;font-weight:700;font-size:15.5px;background:var(--pool);color:var(--on);cursor:pointer}
+.btn.ghost{background:var(--soft);color:var(--pool)}
+.btn.small{min-height:40px;padding:8px 12px;font-size:14px}
+.btn:disabled{opacity:.6}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--pool);font-size:13px;font-weight:700}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.6}
+.chip.live{background:#DDF7E9;color:#0B7A4F} .chip.live .dot{opacity:1;animation:p 1.6s infinite}
+@media (prefers-color-scheme:dark){.chip.live{background:#10302A;color:#4FD1A0}}
+@keyframes p{0%{box-shadow:0 0 0 0 rgba(15,180,110,.6)}70%{box-shadow:0 0 0 8px rgba(15,180,110,0)}100%{box-shadow:0 0 0 0 rgba(15,180,110,0)}}
+.steps{counter-reset:s;display:grid;gap:14px}
+.step h3{margin:0 0 8px;font-size:15.5px}
+.step h3::before{counter-increment:s;content:counter(s);display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--pool);color:var(--on);font-size:13px;margin-right:8px}
+.list{display:grid;gap:8px;margin-top:10px}
+.pick{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px;cursor:pointer;min-height:56px}
+.pick b{display:block}
+.pick .plus{flex:none;width:34px;height:34px;border-radius:50%;background:var(--pool);color:var(--on);display:grid;place-items:center;font-size:22px;line-height:1}
+.pick.on{border-color:var(--ok)} .pick.on .plus{background:var(--ok)}
+.sw-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sw-h h2{margin:0}
+.x{border:0;background:transparent;color:var(--muted);font-size:13.5px;cursor:pointer;padding:6px;text-decoration:underline}
+.ev{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.ev:first-of-type{margin-top:8px}
+.ev .nm{font-weight:700}
+.ev .when{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ev .t{font:800 22px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right;font-variant-numeric:tabular-nums}
+.ev .tw{text-align:right;font-size:13px;color:var(--muted)}
+.ev .sub{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.ev.new{animation:flash 2.4s ease}
+@keyframes flash{0%{background:var(--warn-soft)}100%{background:transparent}}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12.5px;font-weight:800;vertical-align:1px}
+.b-ok{background:var(--ok-soft);color:var(--ok)} .b-bad{background:var(--bad-soft);color:var(--bad)} .b-soft{background:var(--soft);color:var(--pool)} .b-warn{background:var(--warn-soft);color:var(--warn)}
+.gain{color:var(--ok);font-weight:700} .loss{color:var(--muted)}
+details{grid-column:1/-1} details summary{cursor:pointer;color:var(--pool);font-weight:600;font-size:13.5px;padding:4px 0}
+.spl{font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:10;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px))}
+.dock .wrap{display:flex;gap:8px}
+.dock .btn{flex:1;min-height:48px;padding:10px 8px;font-size:14.5px}
+.sheet-bg{position:fixed;inset:0;background:rgba(5,15,25,.5);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow:auto}
+.sheet h2{margin:0 0 8px;font-size:19px}
+.sheet ol{padding-left:22px;margin:8px 0} .sheet li{margin:6px 0}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:14px;padding:14px 16px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:40}
+.err{color:var(--bad);font-size:14px}
+.foot{font-size:12.5px;color:var(--muted);text-align:center;padding:4px 8px}
+.foot a{color:inherit}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hrow">
+    <div class="brand"><img src="/heatline/icon.svg" alt=""><div><b>Heatline</b><span data-t="tag"></span></div></div>
+    <button class="hbtn" id="langBtn" type="button" aria-label="Language">PT</button>
+  </div>
+</header>
+
+<div class="wrap"><main id="main">
+
+  <!-- the meet -->
+  <div class="card" id="meetCard">
+    <div class="sw-h">
+      <div><h2 id="meetName">…</h2><div class="small muted" id="meetWhere"></div></div>
+      <span class="chip" id="chip"><span class="dot"></span><span id="chipTxt"></span></span>
+    </div>
+    <p class="small muted" id="meetNote" style="margin:10px 0 0"></p>
+    <div class="row" style="margin-top:12px">
+      <button class="btn ghost small" id="refreshBtn" type="button" data-t="refresh"></button>
+      <button class="btn ghost small" id="notifBtn" type="button" data-t="alertsOn"></button>
+      <button class="btn ghost small" id="meetBtn" type="button" data-t="changeMeet"></button>
+    </div>
+    <p class="small muted" id="lastTxt" style="margin:8px 0 0"></p>
+  </div>
+
+  <!-- choose / add a swimmer -->
+  <div class="card" id="addCard">
+    <div class="steps">
+      <div class="step" id="stepMeet">
+        <h3 data-t="s1"></h3>
+        <div class="list" id="meetList"></div>
+        <form id="linkForm" style="margin-top:10px">
+          <label class="small muted" for="linkIn" data-t="pasteLink"></label>
+          <div class="row" style="flex-wrap:nowrap;margin-top:6px"><input type="url" id="linkIn" inputmode="url" placeholder="https://live.swimrankings.net/…" autocomplete="off"><button class="btn small" type="submit">OK</button></div>
+          <p class="err" id="linkErr" hidden></p>
+        </form>
+      </div>
+      <div class="step" id="stepSwim">
+        <h3 data-t="s2"></h3>
+        <input type="search" id="q" autocomplete="off" autocapitalize="words" spellcheck="false">
+        <p class="small muted" id="qHint" style="margin:6px 0 0"></p>
+        <div class="list" id="qList"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px" id="doneRow" hidden><button class="btn" id="doneBtn" type="button" style="flex:1" data-t="done"></button></div>
+  </div>
+
+  <div id="swimmers" style="display:grid;gap:14px"></div>
+
+  <p class="foot"><span data-t="data"></span> <a href="https://live.swimrankings.net/" target="_blank" rel="noopener">live.swimrankings.net</a> · <span data-t="notAff"></span><br><span data-t="privacy"></span> <a href="/privacy/" data-t="privLink"></a> · Heatline by <a href="/">LusoApps</a> · v0.9</p>
+</main></div>
+
+<nav class="dock"><div class="wrap">
+  <button class="btn ghost" id="addBtn" type="button" data-t="addSwimmer"></button>
+  <button class="btn ghost" id="fbBtn" type="button" data-t="feedback"></button>
+  <button class="btn" id="installBtn" type="button" data-t="install"></button>
+</div></nav>
+
+<!-- sheets -->
+<div class="sheet-bg" id="fbSheet" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fbT">
+  <h2 id="fbT" data-t="fbTitle"></h2>
+  <p class="small muted" data-t="fbText" style="margin-top:0"></p>
+  <textarea id="fbIn"></textarea>
+  <div class="row" style="margin-top:12px"><button class="btn" id="fbSend" type="button" style="flex:1" data-t="send"></button><button class="btn ghost" type="button" data-close data-t="close"></button></div>
+  <p class="small muted" style="margin:10px 0 0"><span data-t="orEmail"></span> <a href="mailto:hello@lusoapps.com">hello@lusoapps.com</a></p>
+</div></div>
+
+<div class="sheet-bg" id="instSheet" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="inT">
+  <h2 id="inT" data-t="install"></h2>
+  <div id="instIOS"><p class="muted" data-t="iosIntro" style="margin-top:0"></p><ol><li data-t="ios1"></li><li data-t="ios2"></li><li data-t="ios3"></li></ol></div>
+  <div id="instOther"><p class="muted" data-t="andIntro" style="margin-top:0"></p><ol><li data-t="and1"></li><li data-t="and2"></li></ol></div>
+  <button class="btn ghost" type="button" data-close data-t="close" style="width:100%;margin-top:8px"></button>
+</div></div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+"use strict";
+// ---------- text ----------
+var T={
+pt:{tag:"Resultados de natação ao vivo",refresh:"Atualizar",alertsOn:"Ativar avisos",alertsOk:"Avisos ativos ✓",changeMeet:"Mudar competição",
+ s1:"Escolhe a competição",s2:"Procura o nadador",pasteLink:"Ou cola o link da competição em live.swimrankings.net",badLink:"O link tem de ser de live.swimrankings.net, por exemplo https://live.swimrankings.net/10989/",
+ qPh:"Nome do nadador (ex.: Maria Silva)",qShort:"Escreve pelo menos 3 letras do nome.",qNone:"Ninguém com esse nome nesta competição.",qNoList:"Nesta competição os nomes só aparecem quando forem publicados os primeiros resultados.",qBusy:"A procurar…",
+ done:"Pronto",addSwimmer:"+ Nadador",feedback:"Sugestão",install:"Instalar app",remove:"remover",born:"n.",
+ liveNow:"Ao vivo",official:"Resultados oficiais",soon:"Ainda sem resultados",today:"Hoje",
+ noteSoon:"Os tempos aparecem aqui sozinhos assim que forem publicados, com a app aberta.",noteLive:"A verificar novos tempos a cada 45 segundos.",noteOff:"Competição terminada.",
+ last:"Última verificação",entry:"Inscrição",noEntry:"sem tempo de inscrição",extra:"extra",heat:"Série",lane:"Pista",pts:"pontos",place:"lugar",splits:"Parciais",
+ leg:"percurso",relay:"Estafeta",dsq:"Desclassificado",dns:"Não nadou",dnf:"Não terminou",better:"melhor que a inscrição",pb:"melhor tempo",slower:"",notFound:"Este nadador não está nesta competição.",
+ event:"Prova",pickSw:"Escolhe um nadador para começar.",
+ fbTitle:"Enviar sugestão",fbText:"O que falta, o que não funciona, o que gostavas de ver? Lemos tudo.",send:"Enviar",close:"Fechar",orEmail:"Ou escreve para",fbEmpty:"Escreve primeiro a tua sugestão.",
+ iosIntro:"No iPhone ou iPad, no Safari:",ios1:"Toca no botão Partilhar (o quadrado com a seta para cima).",ios2:"Escolhe «Adicionar ao ecrã principal».",ios3:"Toca em «Adicionar». O ícone Heatline aparece no ecrã.",
+ andIntro:"No Android, no Chrome:",and1:"Toca nos três pontos ⋮ no canto de cima.",and2:"Escolhe «Instalar app» ou «Adicionar ao ecrã principal».",
+ installed:"App instalada. Procura o ícone Heatline.",alertsNo:"Os avisos não foram autorizados.",alertsYes:"Avisos ativos. Mantém a app aberta durante a prova.",alertsUnsup:"Este telemóvel só permite avisos depois de instalar a app.",
+ data:"Dados públicos de",notAff:"sem ligação à organização das provas.",privacy:"Os nadadores escolhidos ficam só neste telemóvel.",privLink:"Privacidade",
+ newRes:"Novo resultado",noConn:"Sem ligação. A tentar de novo…",added:"adicionado",
+ strokes:{FREE:"Livres",BACK:"Costas",BREAST:"Bruços",FLY:"Mariposa",MEDLEY:"Estilos"},ord:function(n){return n+".º"}},
+en:{tag:"Live swim results",refresh:"Refresh",alertsOn:"Turn on alerts",alertsOk:"Alerts on ✓",changeMeet:"Change meet",
+ s1:"Choose the meet",s2:"Find the swimmer",pasteLink:"Or paste the meet link from live.swimrankings.net",badLink:"The link must be from live.swimrankings.net, e.g. https://live.swimrankings.net/10989/",
+ qPh:"Swimmer's name (e.g. Mary Smith)",qShort:"Type at least 3 letters of the name.",qNone:"Nobody with that name at this meet.",qNoList:"At this meet, names appear once the first results are published.",qBusy:"Searching…",
+ done:"Done",addSwimmer:"+ Swimmer",feedback:"Feedback",install:"Install app",remove:"remove",born:"b.",
+ liveNow:"Live",official:"Official results",soon:"No results yet",today:"Today",
+ noteSoon:"Times appear here on their own as soon as they are published, while the app is open.",noteLive:"Checking for new times every 45 seconds.",noteOff:"Meet finished.",
+ last:"Last check",entry:"Entry",noEntry:"no entry time",extra:"extra",heat:"Heat",lane:"Lane",pts:"points",place:"place",splits:"Splits",
+ leg:"leg",relay:"Relay",dsq:"Disqualified",dns:"Did not start",dnf:"Did not finish",better:"faster than entry",pb:"best time",slower:"",notFound:"This swimmer is not at this meet.",
+ event:"Event",pickSw:"Choose a swimmer to start.",
+ fbTitle:"Send feedback",fbText:"What's missing, what doesn't work, what would you like to see? We read everything.",send:"Send",close:"Close",orEmail:"Or write to",fbEmpty:"Write your feedback first.",
+ iosIntro:"On iPhone or iPad, in Safari:",ios1:"Tap the Share button (the square with the up arrow).",ios2:"Choose “Add to Home Screen”.",ios3:"Tap “Add”. The Heatline icon appears on your screen.",
+ andIntro:"On Android, in Chrome:",and1:"Tap the three dots ⋮ at the top.",and2:"Choose “Install app” or “Add to Home screen”.",
+ installed:"App installed. Look for the Heatline icon.",alertsNo:"Alerts were not allowed.",alertsYes:"Alerts on. Keep the app open during the meet.",alertsUnsup:"This phone only allows alerts after installing the app.",
+ data:"Public data from",notAff:"not affiliated with the meet organisers.",privacy:"The swimmers you choose stay on this phone only.",privLink:"Privacy",
+ newRes:"New result",noConn:"No connection. Retrying…",added:"added",
+ strokes:{FREE:"Freestyle",BACK:"Backstroke",BREAST:"Breaststroke",FLY:"Butterfly",MEDLEY:"Medley"},ord:function(n){var s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}},
+es:{tag:"Resultados de natación en directo",refresh:"Actualizar",alertsOn:"Activar avisos",alertsOk:"Avisos activos ✓",changeMeet:"Cambiar competición",
+ s1:"Elige la competición",s2:"Busca al nadador",pasteLink:"O pega el enlace de la competición en live.swimrankings.net",badLink:"El enlace tiene que ser de live.swimrankings.net, por ejemplo https://live.swimrankings.net/10989/",
+ qPh:"Nombre del nadador (ej.: María García)",qShort:"Escribe al menos 3 letras del nombre.",qNone:"Nadie con ese nombre en esta competición.",qNoList:"En esta competición los nombres aparecen cuando se publiquen los primeros resultados.",qBusy:"Buscando…",
+ done:"Listo",addSwimmer:"+ Nadador",feedback:"Sugerencia",install:"Instalar app",remove:"quitar",born:"n.",
+ liveNow:"En directo",official:"Resultados oficiales",soon:"Aún sin resultados",today:"Hoy",
+ noteSoon:"Los tiempos aparecen aquí solos en cuanto se publican, con la app abierta.",noteLive:"Buscando tiempos nuevos cada 45 segundos.",noteOff:"Competición terminada.",
+ last:"Última comprobación",entry:"Inscripción",noEntry:"sin tiempo de inscripción",extra:"extra",heat:"Serie",lane:"Calle",pts:"puntos",place:"puesto",splits:"Parciales",
+ leg:"relevo",relay:"Relevo",dsq:"Descalificado",dns:"No nadó",dnf:"No terminó",better:"mejor que la inscripción",pb:"mejor marca",slower:"",notFound:"Este nadador no está en esta competición.",
+ event:"Prueba",pickSw:"Elige un nadador para empezar.",
+ fbTitle:"Enviar sugerencia",fbText:"¿Qué falta, qué no funciona, qué te gustaría ver? Lo leemos todo.",send:"Enviar",close:"Cerrar",orEmail:"O escribe a",fbEmpty:"Escribe primero tu sugerencia.",
+ iosIntro:"En iPhone o iPad, en Safari:",ios1:"Toca el botón Compartir (el cuadrado con la flecha hacia arriba).",ios2:"Elige «Añadir a pantalla de inicio».",ios3:"Toca «Añadir». El icono Heatline aparece en tu pantalla.",
+ andIntro:"En Android, en Chrome:",and1:"Toca los tres puntos ⋮ arriba.",and2:"Elige «Instalar app» o «Añadir a pantalla de inicio».",
+ installed:"App instalada. Busca el icono Heatline.",alertsNo:"No se autorizaron los avisos.",alertsYes:"Avisos activos. Mantén la app abierta durante la competición.",alertsUnsup:"Este teléfono solo permite avisos después de instalar la app.",
+ data:"Datos públicos de",notAff:"sin relación con la organización.",privacy:"Los nadadores elegidos se quedan solo en este teléfono.",privLink:"Privacidad",
+ newRes:"Nuevo resultado",noConn:"Sin conexión. Reintentando…",added:"añadido",
+ strokes:{FREE:"Libre",BACK:"Espalda",BREAST:"Braza",FLY:"Mariposa",MEDLEY:"Estilos"},ord:function(n){return n+".º"}}
+};
+var LS={get:function(k,d){try{var v=localStorage.getItem("hl."+k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem("hl."+k,JSON.stringify(v))}catch(e){}}};
+var LANGS=["pt","en","es"];
+var lang=LS.get("lang",null)||(function(){var l=(navigator.language||"en").slice(0,2).toLowerCase();return LANGS.indexOf(l)>=0?l:"en"})();
+function t(k){return (T[lang]&&T[lang][k]!=null)?T[lang][k]:T.en[k]}
+var LOC={pt:"pt-PT",en:"en-GB",es:"es-ES"};
+
+// Featured meets (entry lists loaded on the server).
+var FEATURED=[{id:"10989",name:"Torneio dos 50 e 100",city:"Pombal",date:"2026-10-31"}];
+
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fmt(s){if(s==null)return "—";var m=Math.floor(s/60),r=s-m*60,rs=r.toFixed(2);return m?m+":"+(r<10?"0":"")+rs:rs}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function dLong(iso){if(!iso)return "";try{return new Date(iso+"T12:00:00").toLocaleDateString(LOC[lang],{weekday:"long",day:"numeric",month:"long"})}catch(e){return iso}}
+function evName(e){if(!e||!e.d)return "";var s=(t("strokes")[e.s]||e.s);return (e.rc>1?e.rc+"×"+e.d+"m ":e.d+"m ")+s}
+
+// ---------- state ----------
+var meets=LS.get("meets",FEATURED.slice()), meetId=LS.get("meet",FEATURED[0].id), swimmers=LS.get("swimmers",[]);
+var DATA=null, timer=null, lastOk=0, POLL=45000, adding=false;
+FEATURED.forEach(function(f){ if(!meets.some(function(m){return m.id===f.id})) meets.unshift(f); });
+function curMeet(){return meets.find(function(m){return m.id===meetId})||meets[0]}
+function mySwimmers(){return swimmers}
+
+// ---------- texts on the page ----------
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-t]").forEach(function(el){el.textContent=t(el.dataset.t)});
+  $("q").placeholder=t("qPh"); $("langBtn").textContent=lang.toUpperCase();
+  updNotif(); render();
+}
+$("langBtn").addEventListener("click",function(){lang=LANGS[(LANGS.indexOf(lang)+1)%LANGS.length];LS.set("lang",lang);applyLang()});
+
+// ---------- add swimmer flow ----------
+function showAdd(on,meetStep){
+  adding=on; $("addCard").hidden=!on; $("stepMeet").hidden=!meetStep; $("doneRow").hidden=!swimmers.length;
+  if(on){ renderMeetList(); $("q").value=""; $("qList").innerHTML=""; $("qHint").textContent=t("qShort"); if(!meetStep) setTimeout(function(){$("q").focus()},50); }
+}
+function renderMeetList(){
+  $("meetList").innerHTML=meets.map(function(m){var on=m.id===meetId;return "<button type='button' class='pick"+(on?" on":"")+"' data-meet='"+esc(m.id)+"'><span><b>"+esc(m.name||(t("event")+" "+m.id))+"</b><span class='small muted'>"+esc([m.city,dLong(m.date)].filter(Boolean).join(" · "))+"</span></span><span class='plus'>"+(on?"✓":"›")+"</span></button>"}).join("");
+}
+$("meetList").addEventListener("click",function(e){var b=e.target.closest("[data-meet]");if(!b)return;setMeet(b.dataset.meet);renderMeetList();$("q").focus()});
+$("linkForm").addEventListener("submit",function(e){
+  e.preventDefault(); var m=String($("linkIn").value).match(/live\.swimrankings\.net\/(?:meets\/(\d+)\/(\d+)|(\d+))/);
+  var id=m?(m[3]||(m[1]+m[2])):null;
+  if(!id){$("linkErr").textContent=t("badLink");$("linkErr").hidden=false;return}
+  $("linkErr").hidden=true; $("linkIn").value="";
+  if(!meets.some(function(x){return x.id===id})){meets.push({id:id,name:"",city:"",date:today()});LS.set("meets",meets)}
+  setMeet(id); renderMeetList(); $("q").focus();
+});
+function setMeet(id){ if(id===meetId) return; meetId=id; LS.set("meet",id); DATA=null; render(); load(); }
+
+var qTimer=null, qSeq=0;
+$("q").addEventListener("input",function(){
+  clearTimeout(qTimer); var q=this.value.trim();
+  if(q.length<3){$("qList").innerHTML="";$("qHint").textContent=t("qShort");return}
+  $("qHint").textContent=t("qBusy");
+  qTimer=setTimeout(function(){
+    var my=++qSeq;
+    fetch("/heatline/api/search?meet="+encodeURIComponent(meetId)+"&q="+encodeURIComponent(q),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
+      if(my!==qSeq) return;
+      var L=j.swimmers||[];
+      $("qHint").textContent=L.length?"":(DATA&&!DATA.available&&!FEATURED.some(function(f){return f.id===meetId})?t("qNoList"):t("qNone"));
+      $("qList").innerHTML=L.map(function(s){var on=swimmers.some(function(x){return x.lic===s.lic});
+        return "<button type='button' class='pick"+(on?" on":"")+"' data-lic='"+esc(s.lic)+"' data-name='"+esc(s.name)+"' data-year='"+esc(s.year||"")+"' data-club='"+esc(s.club)+"'><span><b>"+esc(s.name)+"</b><span class='small muted'>"+esc([s.year?t("born")+" "+s.year:"",s.club].filter(Boolean).join(" · "))+"</span></span><span class='plus'>"+(on?"✓":"+")+"</span></button>"}).join("");
+    }).catch(function(){ if(my===qSeq) $("qHint").textContent=t("noConn"); });
+  },300);
+});
+$("qList").addEventListener("click",function(e){
+  var b=e.target.closest("[data-lic]"); if(!b) return;
+  var lic=b.dataset.lic;
+  if(swimmers.some(function(x){return x.lic===lic})) swimmers=swimmers.filter(function(x){return x.lic!==lic});
+  else { swimmers.push({lic:lic,name:b.dataset.name,year:+b.dataset.year||null,club:b.dataset.club}); toast(b.dataset.name+" · "+t("added")); }
+  LS.set("swimmers",swimmers);
+  b.classList.toggle("on"); b.querySelector(".plus").textContent=b.classList.contains("on")?"✓":"+";
+  $("doneRow").hidden=!swimmers.length;
+  load();
+});
+$("doneBtn").addEventListener("click",function(){showAdd(false);window.scrollTo({top:0,behavior:"smooth"})});
+$("addBtn").addEventListener("click",function(){showAdd(true,false);$("addCard").scrollIntoView({behavior:"smooth",block:"start"})});
+$("meetBtn").addEventListener("click",function(){showAdd(true,true);$("addCard").scrollIntoView({behavior:"smooth",block:"start"})});
+
+// ---------- data ----------
+function load(){
+  if(!swimmers.length && DATA) { render(); return Promise.resolve(); }
+  var lic=swimmers.map(function(s){return s.lic}).join(",");
+  return fetch("/heatline/api/meet?id="+encodeURIComponent(meetId)+"&lic="+encodeURIComponent(lic),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){
+    var first=!DATA||DATA.id!==j.id; var prev=DATA; DATA=j; lastOk=Date.now();
+    var m=curMeet(); if(m && j.meet && j.meet.name && (!m.name||m.city!==j.meet.city||(j.meet.date&&m.date!==j.meet.date))){m.name=j.meet.name;m.city=j.meet.city;if(j.meet.date)m.date=j.meet.date;LS.set("meets",meets)}
+    announce(first);
+    render(); schedule();
+  }).catch(function(){ $("lastTxt").textContent=t("noConn"); schedule(); });
+}
+function isLive(){ if(!DATA) return false; var m=curMeet()||{}; if(DATA.available) return DATA.meet.status!=="OFFICIAL"; return (m.date||DATA.meet.date)===today(); }
+function schedule(){ clearTimeout(timer); if(isLive()) timer=setTimeout(function(){ if(!document.hidden) load(); else schedule(); },POLL); }
+document.addEventListener("visibilitychange",function(){ if(!document.hidden && isLive() && Date.now()-lastOk>20000) load(); });
+
+// New results since last time -> toast + notification.
+function rkey(lic,r){return meetId+"|"+lic+"|"+r.n+"|"+(r.relay?"R"+r.leg:"I")+"|"+(r.time||r.st)}
+var fresh={};
+function announce(first){
+  // the first time a swimmer is loaded for a meet, the results already there are not news
+  var seen=LS.get("seen",{}), msgs=[];
+  Object.keys(DATA.swimmers||{}).forEach(function(lic){ var S=DATA.swimmers[lic], ik=meetId+"|"+lic+"|init", init=!seen[ik]; seen[ik]=1;
+    (S.results||[]).forEach(function(r){ var k=rkey(lic,r); if(!seen[k]){ seen[k]=1; if(!init){ fresh[k]=1; msgs.push(resMsg(S,r)); } } }); });
+  LS.set("seen",seen);
+  msgs.forEach(function(m,i){ setTimeout(function(){ toast(m); notify(m); }, i*2500); });
+}
+function resMsg(S,r){
+  var e=(DATA.events||{})[r.n], who=(S.name||"").split(" ")[0];
+  var txt=who+" · "+evName(e)+": "+(r.st?stTxt(r.st):fmt(r.time));
+  if(r.place && !r.st) txt+=" · "+t("ord")(r.place)+" "+t("place");
+  var g=gainOf(S,r); if(g>0) txt+=" · −"+g.toFixed(2)+" s";
+  return txt;
+}
+function stTxt(st){return st==="DSQ"?t("dsq"):st==="DNS"||st==="WDR"?t("dns"):st==="DNF"?t("dnf"):st}
+function entryOf(S,r){ var en=(S.entries||[]).find(function(x){return x.n===r.n}); var et=r.et!=null?r.et:(en&&en.et), ep=r.ep||(en&&en.ep); return {et:et,ep:ep}; }
+function gainOf(S,r){ if(r.relay||r.st||!r.time) return 0; var E=entryOf(S,r), pool=DATA.meet.pool||""; if(!E.et||(E.ep&&pool&&E.ep!==pool)) return 0; return Math.round((E.et-r.time)*100)/100; }
+
+// ---------- render ----------
+function render(){
+  var m=curMeet()||{}, M=(DATA&&DATA.meet)||{};
+  $("meetName").textContent=M.name||m.name||(t("event")+" "+meetId);
+  $("meetWhere").textContent=[M.city||m.city, dLong(M.date||m.date)].filter(Boolean).join(" · ");
+  var live=isLive(), chip=$("chip");
+  chip.classList.toggle("live",!!(DATA&&DATA.available&&live));
+  $("chipTxt").textContent=!DATA?"…":DATA.available?(M.status==="OFFICIAL"?t("official"):t("liveNow")):t("soon");
+  $("meetNote").textContent=!DATA?"":DATA.available?(M.status==="OFFICIAL"?t("noteOff"):t("noteLive")):t("noteSoon");
+  if(lastOk) $("lastTxt").textContent=t("last")+": "+new Date(lastOk).toLocaleTimeString(LOC[lang],{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  var html="";
+  swimmers.forEach(function(s){
+    var S=DATA&&DATA.swimmers&&DATA.swimmers[s.lic];
+    html+="<div class='card'><div class='sw-h'><div><h2>"+esc(s.name)+"</h2><div class='small muted'>"+esc([s.year?t("born")+" "+s.year:"",s.club].filter(Boolean).join(" · "))+"</div></div><button class='x' type='button' data-rm='"+esc(s.lic)+"'>"+esc(t("remove"))+"</button></div>";
+    if(!DATA) html+="<p class='muted'>…</p>";
+    else if(!S||!S.found) html+="<p class='muted small' style='margin:10px 0 0'>"+esc(t("notFound"))+"</p>";
+    else html+=eventsHtml(s.lic,S);
+    html+="</div>";
+  });
+  if(!swimmers.length && !adding) html="<div class='card'><p class='muted' style='margin:0'>"+esc(t("pickSw"))+"</p></div>";
+  $("swimmers").innerHTML=html;
+}
+function eventsHtml(lic,S){
+  var E=DATA.events||{}, rows={};
+  (S.entries||[]).forEach(function(x){ rows[x.n]={n:x.n,en:x,res:[]}; });
+  (S.results||[]).forEach(function(r){ var k=r.relay?r.n+"R":String(r.n); rows[k]=rows[k]||{n:r.n,res:[]}; rows[k].res.push(r); });
+  var merged=rows;
+  return Object.keys(merged).map(function(k){return merged[k]}).sort(function(a,b){return a.n-b.n}).map(function(x){
+    var e=E[x.n]||{}, r=x.res[0], when=[e.time||"", t("event")+" "+x.n].filter(Boolean).join(" · ");
+    var title=r&&r.relay?(t("relay")+" "+evName(e)):evName(e);
+    var right="", sub=[];
+    if(r){
+      right=r.st?"<span class='badge b-bad'>"+esc(stTxt(r.st))+"</span>":"<div class='t'>"+fmt(r.time)+"</div>";
+      if(r.place&&!r.st) right+="<div class='tw'>"+esc(t("ord")(r.place))+" "+esc(t("place"))+"</div>";
+      if(r.heat) sub.push(t("heat")+" "+r.heat+(r.lane?" · "+t("lane")+" "+r.lane:""));
+      if(r.relay){ sub.push((r.team||"")+" · "+r.leg+".º "+t("leg")+(r.legTime?": "+fmt(r.legTime):"")); }
+      else { var en=entryOf(S,r); if(en.et) sub.push(t("entry")+" "+fmt(en.et)+(en.ep?" ("+en.ep+")":"")); var g=gainOf(S,r); if(g>0) sub.push("<span class='gain'>−"+g.toFixed(2)+" s · "+esc(t("better"))+"</span>"); }
+      if(r.pts) sub.push(r.pts+" "+t("pts"));
+    } else {
+      var en2=x.en||{}; right="<div class='tw'>"+(en2.et?esc(t("entry"))+"<br><b style='font-size:15px;color:var(--ink)'>"+fmt(en2.et)+"</b>"+(en2.ep?" <span class='small'>"+en2.ep+"</span>":""):esc(t("noEntry")))+"</div>";
+      if(en2.x) sub.push("<span class='badge b-soft'>"+esc(t("extra"))+"</span>");
+    }
+    var sp=r&&r.splits&&r.splits.length?"<details><summary>"+esc(t("splits"))+"</summary><div class='spl'>"+r.splits.map(function(s,i,a){var lap=s.t-(i?a[i-1].t:0);return s.d+" m: "+fmt(s.t)+" ("+fmt(lap)+")"}).join("<br>")+(r.time?"<br>"+e.d*(e.rc||1)+" m: "+fmt(r.time)+" ("+fmt(r.time-r.splits[r.splits.length-1].t)+")":"")+"</div></details>":"";
+    var isNew=r&&fresh[rkey(lic,r)];
+    return "<div class='ev"+(isNew?" new":"")+"'><div><div class='nm'>"+esc(title)+"</div><div class='when'>"+esc(when)+"</div></div><div>"+right+"</div>"+(sub.length?"<div class='sub'>"+sub.join(" · ")+"</div>":"")+sp+"</div>";
+  }).join("");
+}
+$("swimmers").addEventListener("click",function(e){
+  var b=e.target.closest("[data-rm]"); if(!b) return;
+  swimmers=swimmers.filter(function(x){return x.lic!==b.dataset.rm}); LS.set("swimmers",swimmers);
+  if(!swimmers.length) showAdd(true,false); render();
+});
+$("refreshBtn").addEventListener("click",function(){var b=this;b.disabled=true;load().then(function(){b.disabled=false})});
+
+// ---------- alerts ----------
+function toast(msg){var el=$("toast");el.textContent=msg;el.hidden=false;clearTimeout(el._h);el._h=setTimeout(function(){el.hidden=true},8000);if(navigator.vibrate)try{navigator.vibrate([120,60,120])}catch(e){}}
+function notify(body){
+  if(!("Notification" in window)||Notification.permission!=="granted") return;
+  if(navigator.serviceWorker) navigator.serviceWorker.ready.then(function(reg){reg.showNotification("Heatline",{body:body,icon:"/heatline/icon-192.png",badge:"/heatline/icon-192.png",tag:"hl"+Date.now()})}).catch(function(){});
+}
+function updNotif(){ var ok="Notification" in window && Notification.permission==="granted"; $("notifBtn").textContent=ok?t("alertsOk"):t("alertsOn"); $("notifBtn").disabled=ok; }
+$("notifBtn").addEventListener("click",function(){
+  if(!("Notification" in window)){toast(t("alertsUnsup"));return}
+  Notification.requestPermission().then(function(p){toast(p==="granted"?t("alertsYes"):t("alertsNo"));updNotif()});
+});
+
+// ---------- feedback ----------
+function openSheet(id){$("toast").hidden=true;$(id).hidden=false}
+document.querySelectorAll(".sheet-bg").forEach(function(bg){bg.addEventListener("click",function(e){if(e.target===bg||e.target.closest("[data-close]"))bg.hidden=true})});
+$("fbBtn").addEventListener("click",function(){openSheet("fbSheet");setTimeout(function(){$("fbIn").focus()},50)});
+$("fbSend").addEventListener("click",function(){
+  var txt=$("fbIn").value.trim(); if(!txt){toast(t("fbEmpty"));return}
+  var info="\n\n—\nHeatline v0.9 · "+lang+" · "+(isIOS()?"iOS":/Android/i.test(navigator.userAgent)?"Android":"other")+" · meet "+meetId;
+  location.href="mailto:hello@lusoapps.com?subject="+encodeURIComponent("Heatline – "+t("feedback"))+"&body="+encodeURIComponent(txt+info);
+  $("fbSheet").hidden=true; $("fbIn").value="";
+});
+
+// ---------- install ----------
+function isIOS(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)}
+var standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+var deferred=null;
+if(standalone) $("installBtn").hidden=true;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferred=e});
+$("installBtn").addEventListener("click",function(){
+  if(deferred){deferred.prompt();deferred.userChoice.finally(function(){deferred=null});return}
+  $("instIOS").hidden=!isIOS(); $("instOther").hidden=isIOS(); openSheet("instSheet");
+});
+window.addEventListener("appinstalled",function(){$("installBtn").hidden=true;toast(t("installed"))});
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/heatline/sw.js",{scope:"/heatline/"}).catch(function(){});
+
+// ---------- start ----------
+applyLang();
+showAdd(!swimmers.length,false);
+load();
+})();
+</script>
+</body>
+</html>
