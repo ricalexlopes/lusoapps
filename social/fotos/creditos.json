@@ -15,11 +15,6 @@
   "source": "Unsplash"
  },
  {
-  "file": "costas-prova.jpg",
-  "author": "April Walker",
-  "source": "Unsplash"
- },
- {
   "file": "drone-partida.jpg",
   "author": "Vijay Richhiya",
   "source": "Pexels"
@@ -32,16 +27,6 @@
  {
   "file": "subaquatica-nadador.jpg",
   "author": "12019",
-  "source": "Pixabay"
- },
- {
-  "file": "brucos-chapeu-singapura.jpg",
-  "author": "StockSnap",
-  "source": "Pixabay"
- },
- {
-  "file": "mariposa-chapeus-universidade.jpg",
-  "author": "richenders",
   "source": "Pixabay"
  },
  {
@@ -63,10 +48,5 @@
   "file": "subaquatica-pista.jpg",
   "author": "Stephen Ventura",
   "source": "Unsplash"
- },
- {
-  "file": "piscina-coberta-vazia.jpg",
-  "author": "?",
-  "source": "?"
  }
 ]
